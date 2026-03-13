@@ -8,9 +8,9 @@
         <version>4.0.3</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>com.Nexus</groupId>
+    <groupId>com.Sutrava</groupId>
     <artifactId>BackEnd</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>Dev</version>
     <name>BackEnd</name>
     <description>BackEnd</description>
     <url/>
