@@ -11,6 +11,7 @@ import org.springframework.web.client.RestClient;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -39,8 +40,34 @@ public class RestClientConfig {
         return manager;
     }
 
-    @Bean
-    public RestClient restClient(OAuth2AuthorizedClientManager authorizedClientManager) {
+    // Atlassian specific RestClient
+    @Bean(name = "atlassianRestClient")
+    public RestClient atlassianRestClient(OAuth2AuthorizedClientManager authorizedClientManager) {
+        return buildRestClient("atlassian", authorizedClientManager);
+    }
+
+    // Slack specific RestClient
+    @Bean(name = "slackRestClient")
+    public RestClient slackRestClient(OAuth2AuthorizedClientManager authorizedClientManager) {
+        return buildRestClient("slack", authorizedClientManager);
+    }
+
+    @Bean(name = "slackBotRestClient")
+    public RestClient slackBotRestClient(@Value("${SLACK_BOT_TOKEN}") String botToken) {
+        return RestClient.builder()
+                .defaultHeader("Authorization", "Bearer " + botToken)
+                .build();
+    }
+
+    @Bean(name = "aiRestClient")
+    public RestClient aiRestClient() {
+        return RestClient.builder()
+                .baseUrl("http://127.0.0.1:1234")
+                .defaultHeader("Content-Type", "application/json")
+                .build();
+    }
+
+    private RestClient buildRestClient(String provider, OAuth2AuthorizedClientManager authorizedClientManager) {
         ClientHttpRequestInterceptor interceptor = (request, body, execution) -> {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -48,14 +75,15 @@ public class RestClientConfig {
                 throw new IllegalStateException("No authentication found");
             }
 
+            ServletRequestAttributes attrs =
+                    (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+
             OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest
-                    .withClientRegistrationId("atlassian")
-                    .principal(authentication)  // use actual logged in user
-                    .attributes(attrs -> {
-                        attrs.put(HttpServletRequest.class.getName(),
-                                ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest());
-                        attrs.put(HttpServletResponse.class.getName(),
-                                ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getResponse());
+                    .withClientRegistrationId(provider)
+                    .principal(authentication)
+                    .attributes(a -> {
+                        a.put(HttpServletRequest.class.getName(), attrs.getRequest());
+                        a.put(HttpServletResponse.class.getName(), attrs.getResponse());
                     })
                     .build();
 
