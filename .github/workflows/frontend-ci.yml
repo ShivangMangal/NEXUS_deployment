@@ -5,7 +5,7 @@ on:
   push:
     branches: [ "main" ]
     paths:
-      - 'Phase-2/Sutrava_Frontend-main/**'
+      - 'Sutrava_Frontend/**'
       - '.github/workflows/frontend-ci.yml'
 
 env:
@@ -37,7 +37,7 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          cd Phase-2/Sutrava_Frontend-main
+          cd Sutrava_Frontend
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
