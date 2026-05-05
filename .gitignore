@@ -38,3 +38,4 @@ Phase-2/BackEnd/src/main/resources/application-secrets.properties
 node_modules/
 dist/
 .DS_Store
+.DS_Store
